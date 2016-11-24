@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = [{
   entry: ['./src/rebase.js'],
   output: {
     filename: "dist/bundle.js",
@@ -25,4 +25,25 @@ module.exports = {
       }
     ]
   }
-};
+},{
+  entry: ['./src/rebase.js'],
+  output: {
+    filename: "dist/Rebase.js",
+    libraryTarget: "var",
+    library: "Rebase"
+  },
+  externals: {
+    "firebase": "firebase"
+  },
+  module: {
+    loaders: [{
+      test: /\.js$/,
+      loader: 'babel',
+      exclude: /node_modules/,
+      query: {
+        cacheDirectory: true,
+        presets: ['es2015']
+      }
+    }]
+  }
+}];
