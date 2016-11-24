@@ -1,3 +1,4 @@
+var webpack = require('webpack');
 module.exports = [{
   entry: ['./src/rebase.js'],
   output: {
@@ -35,6 +36,7 @@ module.exports = [{
   externals: {
     "firebase": "firebase"
   },
+  plugins: [new webpack.optimize.UglifyJsPlugin()],
   module: {
     loaders: [{
       test: /\.js$/,
