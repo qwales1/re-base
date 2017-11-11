@@ -1,14 +1,15 @@
-var Rebase = require('../../dist/bundle');
+const Rebase = require('../../../src/rebase');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var firebase = require('firebase/app');
-var database = require('firebase/database');
+require('firebase/database');
 
-var invalidEndpoints = require('../fixtures/invalidEndpoints');
-var dummyObjData = require('../fixtures/dummyObjData');
-var invalidOptions = require('../fixtures/invalidOptions');
-var dummyArrData = require('../fixtures/dummyArrData');
-var firebaseConfig = require('../fixtures/config');
+var invalidEndpoints = require('../../fixtures/invalidEndpoints');
+var dummyObjData = require('../../fixtures/dummyObjData');
+var dummyArrayOfObjects = require('../../fixtures/dummyArrayOfObjects');
+var invalidOptions = require('../../fixtures/invalidOptions');
+var dummyArrData = require('../../fixtures/dummyArrData');
+var firebaseConfig = require('../../fixtures/config');
 
 describe('bindToState()', function() {
   var base;
@@ -33,7 +34,7 @@ describe('bindToState()', function() {
 
   beforeEach(() => {
     app = firebase.initializeApp(firebaseConfig);
-    var db = database(app);
+    var db = firebase.database(app);
     base = Rebase.createClass(db);
   });
 
@@ -96,11 +97,7 @@ describe('bindToState()', function() {
           });
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -129,11 +126,7 @@ describe('bindToState()', function() {
           });
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -167,11 +160,7 @@ describe('bindToState()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -197,11 +186,7 @@ describe('bindToState()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -232,11 +217,7 @@ describe('bindToState()', function() {
           base.removeBinding(this.ref);
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -271,11 +252,7 @@ describe('bindToState()', function() {
           base.removeBinding(this.ref);
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -312,11 +289,7 @@ describe('bindToState()', function() {
           base.removeBinding(this.ref);
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -345,11 +318,7 @@ describe('bindToState()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -377,11 +346,7 @@ describe('bindToState()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -473,6 +438,40 @@ describe('bindToState()', function() {
     });
   });
 
+  it('works with queries', done => {
+    class TestComponent extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          data: []
+        };
+      }
+      componentWillMount() {
+        this.ref = base.bindToState(testEndpoint, {
+          context: this,
+          state: 'data',
+          asArray: true,
+          queries: {
+            limitToLast: 1,
+            orderByChild: 'name',
+            equalTo: 'Tyler'
+          }
+        });
+      }
+      componentDidMount() {
+        ref.child(testEndpoint).set(dummyArrayOfObjects);
+      }
+      componentDidUpdate() {
+        expect(this.state.data).toEqual([{ key: '0', name: 'Tyler' }]);
+        done();
+      }
+      render() {
+        return <div>No Data</div>;
+      }
+    }
+    ReactDOM.render(<TestComponent />, document.getElementById('mount'));
+  });
+
   it('listeners are removed when component unmounts', done => {
     spyOn(console, 'error');
     var componentWillMountSpy = jasmine.createSpy('componentWillMountSpy');
@@ -543,11 +542,7 @@ describe('bindToState()', function() {
       }
 
       render() {
-        return (
-          <div>
-            {this.state.showChild ? <ChildComponent /> : null}
-          </div>
-        );
+        return <div>{this.state.showChild ? <ChildComponent /> : null}</div>;
       }
     }
     ReactDOM.render(<ParentComponent />, document.getElementById('mount'));

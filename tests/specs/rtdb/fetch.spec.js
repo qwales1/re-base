@@ -1,16 +1,17 @@
-var Rebase = require('../../dist/bundle');
+const Rebase = require('../../../src/rebase');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var firebase = require('firebase/app');
-var database = require('firebase/database');
+require('firebase/database');
 
-var invalidEndpoints = require('../fixtures/invalidEndpoints');
-var dummyObjData = require('../fixtures/dummyObjData');
-var dummyNestedObjData = require('../fixtures/dummyNestedObjData');
-var invalidOptions = require('../fixtures/invalidOptions');
-var firebaseConfig = require('../fixtures/config');
-var nestedObjArrResult = require('../fixtures/nestedObjArrResult');
-var dummyArrData = require('../fixtures/dummyArrData');
+var invalidEndpoints = require('../../fixtures/invalidEndpoints');
+var dummyObjData = require('../../fixtures/dummyObjData');
+var dummyNestedObjData = require('../../fixtures/dummyNestedObjData');
+var dummyArrayOfObjects = require('../../fixtures/dummyArrayOfObjects');
+var invalidOptions = require('../../fixtures/invalidOptions');
+var firebaseConfig = require('../../fixtures/config');
+var nestedObjArrResult = require('../../fixtures/nestedObjArrResult');
+var dummyArrData = require('../../fixtures/dummyArrData');
 
 describe('fetch()', function() {
   var base;
@@ -30,7 +31,7 @@ describe('fetch()', function() {
 
   beforeEach(done => {
     app = firebase.initializeApp(firebaseConfig);
-    var db = database(app);
+    var db = firebase.database(app);
     base = Rebase.createClass(db);
     done();
   });
@@ -171,6 +172,14 @@ describe('fetch()', function() {
         });
     });
 
+    it('fetch() calls onFailure callback if present', done => {
+      const spy = jasmine.createSpy();
+      base.fetch('/readFail', { context: {}, onFailure: spy }).then(() => {
+        expect(spy.calls.count()).toEqual(1);
+        done();
+      });
+    });
+
     it('fetch() correctly updates the state of the component with data from fetch', done => {
       var testApp = firebase.initializeApp(firebaseConfig, 'DB_CHECK');
       var ref = testApp.database().ref();
@@ -196,11 +205,7 @@ describe('fetch()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));
@@ -232,11 +237,48 @@ describe('fetch()', function() {
           done();
         }
         render() {
-          return (
-            <div>
-              No Data
-            </div>
-          );
+          return <div>No Data</div>;
+        }
+      }
+      ReactDOM.render(<TestComponent />, document.getElementById('mount'));
+    });
+
+    it('works with queries', done => {
+      class TestComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            data: []
+          };
+        }
+        componentWillMount() {
+          this.ref = base.fetch(testEndpoint, {
+            context: this,
+            asArray: true,
+            queries: {
+              limitToLast: 1,
+              orderByChild: 'name',
+              equalTo: 'Tyler'
+            },
+            then(data) {
+              this.setState({
+                data: data
+              });
+            }
+          });
+        }
+        componentDidMount() {
+          app
+            .database()
+            .ref(testEndpoint)
+            .set(dummyArrayOfObjects);
+        }
+        componentDidUpdate() {
+          expect(this.state.data).toEqual([{ key: '0', name: 'Tyler' }]);
+          done();
+        }
+        render() {
+          return <div>No Data</div>;
         }
       }
       ReactDOM.render(<TestComponent />, document.getElementById('mount'));

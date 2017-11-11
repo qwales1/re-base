@@ -1,13 +1,13 @@
-var Rebase = require('../../dist/bundle');
+const Rebase = require('../../../src/rebase');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var firebase = require('firebase');
 var database = require('firebase/database');
 
-var invalidEndpoints = require('../fixtures/invalidEndpoints');
-var dummyObjData = require('../fixtures/dummyObjData');
-var invalidOptions = require('../fixtures/invalidOptions');
-var firebaseConfig = require('../fixtures/config');
+var invalidEndpoints = require('../../fixtures/invalidEndpoints');
+var dummyObjData = require('../../fixtures/dummyObjData');
+var invalidOptions = require('../../fixtures/invalidOptions');
+var firebaseConfig = require('../../fixtures/config');
 
 describe('push()', function() {
   var base;
@@ -16,7 +16,7 @@ describe('push()', function() {
 
   beforeEach(done => {
     app = firebase.initializeApp(firebaseConfig);
-    var db = database(app);
+    var db = firebase.database(app);
     base = Rebase.createClass(db);
     done();
   });
